@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         IMAGE_NAME = 'mazurovsasha/flask-api'
-        REMOTE_HOST = 'ubuntu@37.9.53.33'
+        REMOTE_HOST = 'ubuntu@51.250.35.1'
         REMOTE_DIR = 'flask-api'
 
         // Jenkins credentials
