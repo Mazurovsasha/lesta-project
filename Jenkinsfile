@@ -27,7 +27,7 @@ pipeline {
             steps {
                 sh '''
                     # Устанавливаем flake8 через pip
-                    sudo pip install flake8
+                    pip install --user flake8
                     # Запускаем flake8 для линтинга
                     flake8 .
                 '''
