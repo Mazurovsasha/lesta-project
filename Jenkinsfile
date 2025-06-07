@@ -7,7 +7,7 @@ pipeline {
         REMOTE_DIR = '/home/ubuntu/flask-api'
 
         // Jenkins credentials
-        DOCKER_CREDENTIALS_ID = 'docker-credentials'
+        DOCKER_CREDENTIALS_ID = 'docker-credentials-id'
         SSH_CREDENTIALS_ID = 'ssh-remote-server'
     }
 
