@@ -1,17 +1,29 @@
 #!/bin/sh
 
-echo "Starting entrypoint script..."
+set -e  # Останавливать скрипт при ошибке
 
+echo "📌 Запускаем entrypoint..."
 
+# Показываем текущую директорию и содержимое
+echo "📁 Текущая директория: $(pwd)"
+echo "📄 Содержимое директории:"
+ls -la
+
+# Устанавливаем переменные окружения для Flask
+export FLASK_APP=run.py
+export FLASK_ENV=production
+
+# Инициализация миграций (если каталог отсутствует)
 if [ ! -d "./migrations" ]; then
-  echo "Migrations folder not found, initializing migrations..."
+  echo "🔧 migrations не найдены, создаём..."
   flask db init
   flask db migrate -m "Initial migration"
 fi
 
-  
-echo "Applying migrations..."
+# Применяем миграции
+echo "🔁 Применяем миграции..."
 flask db upgrade
 
-echo "Starting Gunicorn..."
+# Запускаем Gunicorn
+echo "🚀 Запускаем Gunicorn..."
 exec gunicorn --bind 0.0.0.0:5000 "app:create_app()"
