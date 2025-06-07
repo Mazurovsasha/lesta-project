@@ -107,14 +107,8 @@ pipeline {
                                 # Копируем docker-compose.yml на сервер
                                 rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./docker-compose.yml ${REMOTE_HOST}:${REMOTE_DIR}/
 
-                                # Копируем entrypoint.sh на сервер 
-                                rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./entrypoint.sh ${REMOTE_HOST}:${REMOTE_DIR}/
-
                                 # Копируем директорию migrations на сервер 
                                 rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./migrations/ ${REMOTE_HOST}:${REMOTE_DIR}/migrations/
-
-                                # Копируем run.app на сервер 
-                                rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./run.py ${REMOTE_HOST}:${REMOTE_DIR}/
 
                                 # Передаем секретный файл (с .env) на сервер
                                 scp -o StrictHostKeyChecking=no $SECRET_FILE ${REMOTE_HOST}:${REMOTE_DIR}/.env
