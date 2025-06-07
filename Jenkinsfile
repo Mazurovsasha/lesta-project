@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = 'mazurovsasha/flask-api'
         REMOTE_HOST = 'ubuntu@37.9.53.33'
-        REMOTE_DIR = '/home/ubuntu/flask-api'
+        REMOTE_DIR = 'flask-api'
 
         // Jenkins credentials
         DOCKER_CREDENTIALS_ID = 'docker-credentials-id'
@@ -101,18 +101,18 @@ pipeline {
                                 echo "📦 Копируем необходимые файлы и деплоим на сервер..."
 
                                 # Создаем директорию, если её нет
-                                ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} 'mkdir -p ${REMOTE_DIR}'
+                                ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} 'mkdir -p ~/${REMOTE_DIR}'
 
                                 # Копируем docker-compose.yml на сервер
                                 rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./docker-compose.yml ${REMOTE_HOST}:${REMOTE_DIR}/
 
-                                # Копируем entrypoint.sh на сервер (если требуется)
+                                # Копируем entrypoint.sh на сервер 
                                 rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./entrypoint.sh ${REMOTE_HOST}:${REMOTE_DIR}/
 
-                                # Копируем директорию migrations на сервер (если требуется)
+                                # Копируем директорию migrations на сервер 
                                 rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./migrations/ ${REMOTE_HOST}:${REMOTE_DIR}/
 
-                                # Копируем run.app на сервер (если требуется)
+                                # Копируем run.app на сервер 
                                 rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./run.py ${REMOTE_HOST}:${REMOTE_DIR}/
 
                                 # Передаем секретный файл (с .env) на сервер
