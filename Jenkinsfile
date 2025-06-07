@@ -101,7 +101,7 @@ pipeline {
                                 echo "📦 Копируем необходимые файлы и деплоим на сервер..."
 
                                 # Создаем директорию, если её нет
-                                ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} 'mkdir -p ~/${REMOTE_DIR}'
+                                ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} 'sudo -u ubuntu mkdir -p ~/${REMOTE_DIR}'
 
                                 # Копируем docker-compose.yml на сервер
                                 rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./docker-compose.yml ${REMOTE_HOST}:${REMOTE_DIR}/
