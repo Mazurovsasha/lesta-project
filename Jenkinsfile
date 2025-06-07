@@ -21,8 +21,12 @@ pipeline {
         stage('Lint') {
             steps {
                 script {
-                    // Создаем виртуальное окружение и активируем его
+                    // Установка необходимых пакетов для виртуального окружения
                     sh '''
+                        apt-get update
+                        apt-get install -y python3-venv python3-pip
+                        
+                        # Создаем виртуальное окружение и активируем его
                         python3 -m venv venv
                         source venv/bin/activate
                         pip install --upgrade pip
