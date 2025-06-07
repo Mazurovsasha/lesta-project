@@ -7,13 +7,12 @@ pipeline {
 
     environment {
         IMAGE_NAME = 'mazurovsasha/flask-api'
-        REMOTE_HOST = "ubuntu@{params.REMOTE_HOST_IP}"
         REMOTE_DIR = 'flask-api'
 
         // Jenkins credentials
         DOCKER_CREDENTIALS_ID = 'docker-credentials-id'
         SSH_CREDENTIALS_ID = 'ssh-remote-server'
-        SECRETS_FILE_ID = 'flask-secrets-file' 
+        SECRETS_FILE_ID = 'flask-secrets-file'
     }
 
     stages {
@@ -26,13 +25,11 @@ pipeline {
         stage('Lint') {
             steps {
                 script {
-                    // Выполняем линтинг и сохраняем вывод в файл
-                    sh 'flake8 . > flake8.log || true'    
+                    sh 'flake8 . > flake8.log || true'
                 }
             }
             post {
                 always {
-                    // Архивируем лог файл flake8.log
                     archiveArtifacts artifacts: '**/flake8.log', allowEmptyArchive: true
                 }
             }
@@ -42,31 +39,28 @@ pipeline {
             steps {
                 sshagent([SSH_CREDENTIALS_ID]) {
                     script {
+                        def REMOTE_HOST = "ubuntu@${params.REMOTE_HOST_IP}"
                         sh """
                             echo '📦 Проверяем и устанавливаем Docker и Docker Compose на сервере...'
 
                             ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} '
-                                # Устанавливаем Docker
                                 if ! command -v docker &> /dev/null; then
-                                    echo "Docker не установлен. Устанавливаем..."
+                                    echo "Устанавливаем Docker..."
                                     sudo apt-get update &&
                                     sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common &&
                                     curl -fsSL https://get.docker.com -o get-docker.sh &&
                                     sudo sh get-docker.sh &&
                                     sudo systemctl start docker &&
-                                    sudo systemctl enable docker &&
-                                    echo "Docker успешно установлен"
+                                    sudo systemctl enable docker
                                 else
                                     echo "Docker уже установлен"
                                 fi
 
-                                # Устанавливаем Docker Compose
                                 if ! command -v docker-compose &> /dev/null; then
-                                    echo "Docker Compose не установлен. Устанавливаем..."
+                                    echo "Устанавливаем Docker Compose..."
                                     sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose &&
                                     sudo chmod +x /usr/local/bin/docker-compose &&
-                                    sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose &&
-                                    echo "Docker Compose успешно установлен"
+                                    sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
                                 else
                                     echo "Docker Compose уже установлен"
                                 fi
@@ -101,29 +95,24 @@ pipeline {
                 sshagent([SSH_CREDENTIALS_ID]) {
                     withCredentials([file(credentialsId: SECRETS_FILE_ID, variable: 'SECRET_FILE')]) {
                         script {
+                            def REMOTE_HOST = "ubuntu@${params.REMOTE_HOST_IP}"
                             sh """
                                 echo "📦 Копируем необходимые файлы и деплоим на сервер..."
 
-                                # Создаем директорию, если её нет
-                                ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} 'sudo -u ubuntu mkdir -p ~/${REMOTE_DIR}'
-                                ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} 'sudo -u ubuntu mkdir -p ~/${REMOTE_DIR}/migrations'
+                                ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} 'mkdir -p ${REMOTE_DIR}/migrations'
 
-                                # Копируем docker-compose.yml на сервер
                                 rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./docker-compose.yml ${REMOTE_HOST}:${REMOTE_DIR}/
-
-                                # Копируем директорию migrations на сервер 
+                                rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./entrypoint.sh ${REMOTE_HOST}:${REMOTE_DIR}/
                                 rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./migrations/ ${REMOTE_HOST}:${REMOTE_DIR}/migrations/
+                                rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./run.py ${REMOTE_HOST}:${REMOTE_DIR}/
 
-                                # Передаем секретный файл (с .env) на сервер
                                 scp -o StrictHostKeyChecking=no $SECRET_FILE ${REMOTE_HOST}:${REMOTE_DIR}/.env
 
-                                # Выполняем деплой с использованием Docker Compose
                                 ssh ${REMOTE_HOST} '
-                                    source ${REMOTE_DIR}/.env &&
                                     cd ${REMOTE_DIR} &&
-                                    sudo docker-compose down || true &&
-                                    sudo docker-compose pull &&
-                                    sudo docker-compose up -d --remove-orphans
+                                    docker-compose down || true &&
+                                    docker-compose pull &&
+                                    docker-compose up -d --remove-orphans
                                 '
                             """
                         }
