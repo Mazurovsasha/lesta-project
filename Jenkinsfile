@@ -21,9 +21,12 @@ pipeline {
         stage('Lint') {
             steps {
                 script {
-                    // Устанавливаем flake8
+                    // Создаем виртуальное окружение и активируем его
                     sh '''
-                        pip3 install --user flake8
+                        python3 -m venv venv
+                        source venv/bin/activate
+                        pip install --upgrade pip
+                        pip install flake8
                         flake8 .
                     '''
                 }
