@@ -1,9 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.10'
-        }
-    }
+    agent any
 
     environment {
         IMAGE_NAME = 'mazurovsasha/flask-api'
@@ -23,6 +19,11 @@ pipeline {
         }
 
         stage('Lint') {
+            agent {
+                docker {
+                    image 'python:3.10'
+                }
+            }
             steps {
                 sh '''
                     pip install flake8
