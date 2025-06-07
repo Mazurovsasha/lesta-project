@@ -73,13 +73,20 @@ pipeline {
             }
         }
 
+        stage('Build Docker image') {
+            steps {
+                script {
+                    dockerImage = docker.build("${IMAGE_NAME}:${BUILD_NUMBER}")
+                }
+            }
+        }
+
         stage('Push to Docker Hub') {
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
-                        // Push образ в Docker Hub
-                        dockerImage.push("latest")
                         dockerImage.push("${BUILD_NUMBER}")
+                        dockerImage.push("latest")
                     }
                 }
             }
@@ -96,10 +103,16 @@ pipeline {
                                 # Создаем директорию, если её нет
                                 ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} 'mkdir -p ${REMOTE_DIR}'
 
-                                # Копируем только необходимые файлы на сервер
+                                # Копируем docker-compose.yml на сервер
                                 rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./docker-compose.yml ${REMOTE_HOST}:${REMOTE_DIR}/
+
+                                # Копируем entrypoint.sh на сервер (если требуется)
                                 rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./entrypoint.sh ${REMOTE_HOST}:${REMOTE_DIR}/
+
+                                # Копируем директорию app на сервер
                                 rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./app/ ${REMOTE_HOST}:${REMOTE_DIR}/
+
+                                # Копируем директорию migrations на сервер (если требуется)
                                 rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./migrations/ ${REMOTE_HOST}:${REMOTE_DIR}/
 
                                 # Передаем секретный файл (с .env) на сервер
@@ -123,7 +136,7 @@ pipeline {
 
     post {
         always {
-            cleanWs() // Очищаем рабочее пространство после выполнения пайплайна
+            cleanWs()
         }
     }
 }
