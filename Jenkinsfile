@@ -9,6 +9,7 @@ pipeline {
         // Jenkins credentials
         DOCKER_CREDENTIALS_ID = 'docker-credentials-id'
         SSH_CREDENTIALS_ID = 'ssh-remote-server'
+        SECRETS_FILE_ID = 'flask-env-secret' 
     }
 
     stages {
@@ -65,7 +66,7 @@ pipeline {
                                 else
                                     echo "Docker Compose уже установлен"
                                 fi
-                             '
+                            '
                         """
                     }
                 }
@@ -94,25 +95,30 @@ pipeline {
         stage('Deploy to Remote Server') {
             steps {
                 sshagent([SSH_CREDENTIALS_ID]) {
-                    withCredentials([string(credentialsId: 'flask-env-secret', variable: 'ENV_CONTENT')]) {
-                        sh """
-                            echo "📦 Копируем docker-compose и деплоим на сервер..."
+                    withCredentials([file(credentialsId: SECRETS_FILE_ID, variable: 'SECRET_FILE')]) {
+                        script {
+                            sh """
+                                echo "📦 Копируем docker-compose и деплоим на сервер..."
 
-                            ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} '
-                                mkdir -p ${REMOTE_DIR}
-                            '
+                                # Создаем директорию, если её нет
+                                ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} 'mkdir -p ${REMOTE_DIR}'
 
-                            rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./docker-compose.yml ${REMOTE_HOST}:${REMOTE_DIR}/
+                                # Копируем docker-compose.yml на сервер
+                                rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./docker-compose.yml ${REMOTE_HOST}:${REMOTE_DIR}/
 
-                            ssh ${REMOTE_HOST} 'echo "$ENV_CONTENT" > ${REMOTE_DIR}/.env'
+                                # Копируем секретный файл в .env
+                                scp -o StrictHostKeyChecking=no $SECRET_FILE ${REMOTE_HOST}:${REMOTE_DIR}/.env
 
-                            ssh ${REMOTE_HOST} '
-                                cd ${REMOTE_DIR} &&
-                                sudo docker-compose down || true &&
-                                sudo docker-compose pull &&
-                                sudo docker-compose up -d --remove-orphans
-                            '
-                        """
+                                # Выполняем деплой с использованием Docker Compose
+                                ssh ${REMOTE_HOST} '
+                                    source ${REMOTE_DIR}/.env &&
+                                    cd ${REMOTE_DIR} &&
+                                    docker-compose down || true &&
+                                    docker-compose pull &&
+                                    docker-compose up -d --remove-orphans
+                                '
+                            """
+                        }
                     }
                 }
             }
