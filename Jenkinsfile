@@ -7,7 +7,7 @@ pipeline {
         REMOTE_DIR = '/home/ubuntu/flask-api'
 
         // Jenkins credentials
-        DOCKER_CREDENTIALS_ID = 'docker-credentials-id'
+        DOCKER_CREDENTIALS_ID = 'docker-credentials'
         SSH_CREDENTIALS_ID = 'ssh-remote-server'
     }
 
@@ -29,6 +29,30 @@ pipeline {
                 always {
                     // Архивируем лог файл flake8.log
                     archiveArtifacts artifacts: '**/flake8.log', allowEmptyArchive: true
+                }
+            }
+        }
+
+        stage('Install Docker Compose on Remote Server') {
+            steps {
+                sshagent([SSH_CREDENTIALS_ID]) {
+                    script {
+                        sh """
+                            echo '📦 Проверяем и устанавливаем Docker Compose на сервере...'
+
+                            ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} '
+                                if ! command -v docker-compose &> /dev/null; then
+                                    echo "Docker Compose не установлен. Устанавливаем..."
+                                    sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose &&
+                                    sudo chmod +x /usr/local/bin/docker-compose &&
+                                    sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+                                    echo "Docker Compose успешно установлен"
+                                else
+                                    echo "Docker Compose уже установлен"
+                                fi
+                            '
+                        """
+                    }
                 }
             }
         }
