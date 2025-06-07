@@ -9,7 +9,7 @@ pipeline {
         // Jenkins credentials
         DOCKER_CREDENTIALS_ID = 'docker-credentials-id'
         SSH_CREDENTIALS_ID = 'ssh-remote-server'
-        SECRETS_FILE_ID = 'flask-env-secret' 
+        SECRETS_FILE_ID = 'flask-secrets-file' 
     }
 
     stages {
