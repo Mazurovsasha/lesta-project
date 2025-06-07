@@ -20,7 +20,7 @@ def create_app():
     db_host = 'db' # Имя сервиса из docker-compose
 
     app.config['SQLALCHEMY_DATABASE_URI'] = \
-        f'postgresql://{db_user}:{db_password}@{db_host}:5433/{db_name}'
+        f'postgresql://{db_user}:{db_password}@{db_host}:5432/{db_name}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Инициализация расширений с приложением
