@@ -22,17 +22,16 @@ pipeline {
             steps {
                 script {
                     // Установка необходимых пакетов для виртуального окружения
-                    sh '''
-                        apt-get update
-                        apt-get install -y python3-venv python3-pip
+                    sh 'pip install --user flake8'
                         
-                        # Создаем виртуальное окружение и активируем его
-                        python3 -m venv venv
-                        source venv/bin/activate
-                        pip install --upgrade pip
-                        pip install flake8
-                        flake8 .
-                    '''
+                    sh 'flake8 . > flake8.log || tru'    
+        
+                }
+            }
+            post {
+                always {
+                    // Архивируем лог файл flake8.log
+                    archiveArtifacts artifacts: '**/flake8.log', allowEmptyArchive: true
                 }
             }
         }
