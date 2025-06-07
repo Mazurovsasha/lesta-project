@@ -109,11 +109,11 @@ pipeline {
                                 # Копируем entrypoint.sh на сервер (если требуется)
                                 rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./entrypoint.sh ${REMOTE_HOST}:${REMOTE_DIR}/
 
-                                # Копируем директорию app на сервер
-                                rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./app/ ${REMOTE_HOST}:${REMOTE_DIR}/
-
                                 # Копируем директорию migrations на сервер (если требуется)
                                 rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./migrations/ ${REMOTE_HOST}:${REMOTE_DIR}/
+
+                                # Копируем run.app на сервер (если требуется)
+                                rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./run.py ${REMOTE_HOST}:${REMOTE_DIR}/
 
                                 # Передаем секретный файл (с .env) на сервер
                                 scp -o StrictHostKeyChecking=no $SECRET_FILE ${REMOTE_HOST}:${REMOTE_DIR}/.env
