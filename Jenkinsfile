@@ -99,7 +99,7 @@ pipeline {
                             sh """
                                 echo "📦 Копируем необходимые файлы и деплоим на сервер..."
 
-                                ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} 'rm -rf flask-api && mkdir -p ${REMOTE_DIR}/migrations'
+                                ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} 'mkdir -p ${REMOTE_DIR}/migrations'
 
                                 rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./docker-compose.yml ${REMOTE_HOST}:${REMOTE_DIR}/
                                 rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./entrypoint.sh ${REMOTE_HOST}:${REMOTE_DIR}/
