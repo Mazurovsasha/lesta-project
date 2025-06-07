@@ -19,16 +19,16 @@ pipeline {
         }
 
         stage('Lint') {
-            agent {
-                docker {
-                    image 'python:3.10'
-                }
-            }
             steps {
-                sh '''
-                   pip install --user --target=/tmp/pip flake8
-                   /tmp/pip/bin/flake8 .
-                '''
+                script {
+                    // Устанавливаем flake8
+                    sh '''
+                        apt-get update
+                        apt-get install -y python3-pip
+                        pip3 install --user flake8
+                        flake8 .
+                    '''
+                }
             }
         }
 
