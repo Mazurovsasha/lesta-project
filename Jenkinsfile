@@ -33,19 +33,34 @@ pipeline {
             }
         }
 
-        stage('Install Docker Compose on Remote Server') {
+        stage('Install Docker and Docker Compose on Remote Server') {
             steps {
                 sshagent([SSH_CREDENTIALS_ID]) {
                     script {
                         sh """
-                            echo '📦 Проверяем и устанавливаем Docker Compose на сервере...'
+                            echo '📦 Проверяем и устанавливаем Docker и Docker Compose на сервере...'
 
                             ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} '
+                                # Устанавливаем Docker
+                                if ! command -v docker &> /dev/null; then
+                                    echo "Docker не установлен. Устанавливаем..."
+                                    sudo apt-get update &&
+                                    sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common &&
+                                    curl -fsSL https://get.docker.com -o get-docker.sh &&
+                                    sudo sh get-docker.sh &&
+                                    sudo systemctl start docker &&
+                                    sudo systemctl enable docker &&
+                                    echo "Docker успешно установлен"
+                                else
+                                    echo "Docker уже установлен"
+                                fi
+
+                                # Устанавливаем Docker Compose
                                 if ! command -v docker-compose &> /dev/null; then
                                     echo "Docker Compose не установлен. Устанавливаем..."
                                     sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose &&
                                     sudo chmod +x /usr/local/bin/docker-compose &&
-                                    sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+                                    sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose &&
                                     echo "Docker Compose успешно установлен"
                                 else
                                     echo "Docker Compose уже установлен"
