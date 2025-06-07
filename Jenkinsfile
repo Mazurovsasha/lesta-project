@@ -21,11 +21,8 @@ pipeline {
         stage('Lint') {
             steps {
                 script {
-                    // Установка необходимых пакетов для виртуального окружения
-                    sh 'pip install --user flake8'
-                        
-                    sh 'flake8 . > flake8.log || tru'    
-        
+                    // Выполняем линтинг и сохраняем вывод в файл
+                    sh 'flake8 . > flake8.log || true'    
                 }
             }
             post {
