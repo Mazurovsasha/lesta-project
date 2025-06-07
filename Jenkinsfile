@@ -23,7 +23,7 @@ pipeline {
                 script {
                     // Устанавливаем flake8
                     sh '''
-                        sudo pip3 install --user flake8
+                        pip3 install --user flake8
                         flake8 .
                     '''
                 }
