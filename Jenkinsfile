@@ -73,20 +73,13 @@ pipeline {
             }
         }
 
-        stage('Build Docker image') {
-            steps {
-                script {
-                    dockerImage = docker.build("${IMAGE_NAME}:${BUILD_NUMBER}")
-                }
-            }
-        }
-
         stage('Push to Docker Hub') {
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
-                        dockerImage.push("${BUILD_NUMBER}")
+                        // Push образ в Docker Hub
                         dockerImage.push("latest")
+                        dockerImage.push("${BUILD_NUMBER}")
                     }
                 }
             }
@@ -98,15 +91,18 @@ pipeline {
                     withCredentials([file(credentialsId: SECRETS_FILE_ID, variable: 'SECRET_FILE')]) {
                         script {
                             sh """
-                                echo "📦 Копируем docker-compose и деплоим на сервер..."
+                                echo "📦 Копируем необходимые файлы и деплоим на сервер..."
 
                                 # Создаем директорию, если её нет
                                 ssh -o StrictHostKeyChecking=no ${REMOTE_HOST} 'mkdir -p ${REMOTE_DIR}'
 
-                                # Копируем docker-compose.yml на сервер
+                                # Копируем только необходимые файлы на сервер
                                 rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./docker-compose.yml ${REMOTE_HOST}:${REMOTE_DIR}/
+                                rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./entrypoint.sh ${REMOTE_HOST}:${REMOTE_DIR}/
+                                rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./app/ ${REMOTE_HOST}:${REMOTE_DIR}/
+                                rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./migrations/ ${REMOTE_HOST}:${REMOTE_DIR}/
 
-                                # Копируем секретный файл в .env
+                                # Передаем секретный файл (с .env) на сервер
                                 scp -o StrictHostKeyChecking=no $SECRET_FILE ${REMOTE_HOST}:${REMOTE_DIR}/.env
 
                                 # Выполняем деплой с использованием Docker Compose
@@ -127,7 +123,7 @@ pipeline {
 
     post {
         always {
-            cleanWs()
+            cleanWs() // Очищаем рабочее пространство после выполнения пайплайна
         }
     }
 }
