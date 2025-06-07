@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    parameters {
+        string(name: 'REMOTE_HOST_IP', defaultValue: '37.9.53.33', description: 'Введите IP-адрес удаленного хоста, на который требуется установить приложение')
+    }
+
     environment {
         IMAGE_NAME = 'mazurovsasha/flask-api'
         REMOTE_HOST = 'ubuntu@51.250.35.1'
