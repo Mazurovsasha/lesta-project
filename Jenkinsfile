@@ -110,9 +110,9 @@ pipeline {
 
                                 ssh ${REMOTE_HOST} '
                                     cd ${REMOTE_DIR} &&
-                                    docker-compose down || true &&
-                                    docker-compose pull &&
-                                    docker-compose up -d --remove-orphans
+                                    sudo docker-compose down || true &&
+                                    sudo docker-compose pull &&
+                                    sudo docker-compose up -d --remove-orphans
                                 '
                             """
                         }
