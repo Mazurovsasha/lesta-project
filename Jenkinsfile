@@ -23,9 +23,19 @@ pipeline {
         }
 
         stage('Lint') {
+           
+            agent {
+                docker {
+                    image 'python:3.10-slim'
+        }
+    }
+            
             steps {
                 script {
-                    sh 'flake8 . > flake8.log || true'
+                    sh """
+                    python -m pip install flake8
+                    flake8 . > flake8.log
+                    """
                 }
             }
             post {
