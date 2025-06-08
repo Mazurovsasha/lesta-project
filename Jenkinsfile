@@ -2,8 +2,11 @@ pipeline {
     agent any
 
     parameters {
-        string(name: 'REMOTE_HOST_IP', defaultValue: '158.160.149.120', description: 'Введите IP-адрес удаленного хоста, на который требуется установить приложение')
+        string(name: 'REMOTE_HOST_IP', defaultValue: '84.201.151.201', description: 'Введите IP-адрес удаленного хоста, на который требуется установить приложение')
+        string(name: 'REMOTE_USER', defaultValue: 'ubuntu', description: 'Введите IP-адрес удаленного хоста, на который требуется установить приложение')
+
     }
+
 
     environment {
         IMAGE_NAME = 'mazurovsasha/flask-api'
@@ -47,11 +50,22 @@ pipeline {
             }
         }
 
+
+        stage('Confirm and Input Parameters') {
+            steps {
+                script {
+                    def userInput = input(
+                        id: 'userInput', message: 'Проверьте flake8.log. Продолжить деплой?'
+                    )
+                }
+            }
+        }
+
         stage('Install Docker and Docker Compose on Remote Server') {
             steps {
                 sshagent([SSH_CREDENTIALS_ID]) {
                     script {
-                        def REMOTE_HOST = "ubuntu@${params.REMOTE_HOST_IP}"
+                        def REMOTE_HOST = "${params.REMOTE_USER}@${params.REMOTE_HOST_IP}"
                         sh """
                             echo '📦 Проверяем и устанавливаем Docker и Docker Compose на сервере...'
 
@@ -107,7 +121,7 @@ pipeline {
                 sshagent([SSH_CREDENTIALS_ID]) {
                     withCredentials([file(credentialsId: SECRETS_FILE_ID, variable: 'SECRET_FILE')]) {
                         script {
-                            def REMOTE_HOST = "ubuntu@${params.REMOTE_HOST_IP}"
+                            def REMOTE_HOST = "${params.REMOTE_USER}@${params.REMOTE_HOST_IP}"
                             sh """
                                 echo "📦 Копируем необходимые файлы и деплоим на сервер..."
 
