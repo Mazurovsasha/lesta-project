@@ -40,4 +40,3 @@ def get_results():
     """Возвращает все записи из базы данных."""
     all_results = Result.query.order_by(Result.timestamp.desc()).all()
     return jsonify([result.to_dict() for result in all_results]), 200
-    

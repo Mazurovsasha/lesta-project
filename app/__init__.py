@@ -34,4 +34,3 @@ def create_app():
     app.register_blueprint(routes.api_bp)
 
     return app
-    
