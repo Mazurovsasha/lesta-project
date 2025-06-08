@@ -18,3 +18,4 @@ class Result(db.Model):
             'score': self.score,
             'timestamp': self.timestamp.isoformat()
         }
+        
