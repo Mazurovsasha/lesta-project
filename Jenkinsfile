@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     parameters {
-        string(name: 'REMOTE_HOST_IP', defaultValue: '37.9.53.33', description: 'Введите IP-адрес удаленного хоста, на который требуется установить приложение')
+        string(name: 'REMOTE_HOST_IP', defaultValue: '158.160.149.120', description: 'Введите IP-адрес удаленного хоста, на который требуется установить приложение')
     }
 
     environment {
@@ -27,13 +27,15 @@ pipeline {
             agent {
                 docker {
                     image 'python:3.10-slim'
+                    args '--user root'
         }
     }
             
             steps {
                 script {
                     sh """
-                    sudo python -m pip install flake8
+                    pip install --upgrade pip
+                    python -m pip install flake8
                     flake8 . > flake8.log
                     """
                 }
