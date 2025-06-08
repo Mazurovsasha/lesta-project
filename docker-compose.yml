@@ -5,8 +5,6 @@ services:
       - db
     ports:
       - "5000:5000"
-    # volumes:
-    #   - ./migrations:/app/migrations  # только миграции
     restart: always
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/ping"]
