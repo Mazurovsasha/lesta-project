@@ -33,7 +33,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    python -m pip install flake8
+                    sudo python -m pip install flake8
                     flake8 . > flake8.log
                     """
                 }
