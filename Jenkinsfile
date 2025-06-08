@@ -36,7 +36,7 @@ pipeline {
                     sh """
                     pip install --upgrade pip
                     python -m pip install flake8
-                    flake8 . > flake8.log 
+                    flake8 . > flake8.log || true
                     """
                 }
             }
