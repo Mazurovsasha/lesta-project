@@ -1,6 +1,7 @@
 from . import db
 from datetime import datetime
 
+
 class Result(db.Model):
     __tablename__ = 'results'
 
@@ -17,3 +18,4 @@ class Result(db.Model):
             'score': self.score,
             'timestamp': self.timestamp.isoformat()
         }
+

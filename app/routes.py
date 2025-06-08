@@ -1,13 +1,16 @@
 from flask import Blueprint, request, jsonify
 from .models import Result, db
 
+
 # Создание Blueprint для API
 api_bp = Blueprint('api_bp', __name__)
+
 
 @api_bp.route('/ping', methods=['GET'])
 def ping():
     """Эндпоинт для проверки работоспособности сервиса."""
     return jsonify({"status": "ok"}), 200
+
 
 @api_bp.route('/submit', methods=['POST'])
 def submit():
@@ -26,10 +29,15 @@ def submit():
     db.session.add(new_result)
     db.session.commit()
 
-    return jsonify({"message": "Result submitted successfully", "id": new_result.id}), 201
+    return jsonify({
+        "message": "Result submitted successfully",
+        "id": new_result.id
+    }), 201
+
 
 @api_bp.route('/results', methods=['GET'])
 def get_results():
     """Возвращает все записи из базы данных."""
     all_results = Result.query.order_by(Result.timestamp.desc()).all()
     return jsonify([result.to_dict() for result in all_results]), 200
+

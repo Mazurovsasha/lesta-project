@@ -3,9 +3,11 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import os
 
+
 # Инициализация расширений
 db = SQLAlchemy()
 migrate = Migrate()
+
 
 def create_app():
     """
@@ -17,7 +19,7 @@ def create_app():
     db_user = os.getenv('POSTGRES_USER')
     db_password = os.getenv('POSTGRES_PASSWORD')
     db_name = os.getenv('POSTGRES_DB')
-    db_host = 'db' # Имя сервиса из docker-compose
+    db_host = 'db'  # Имя сервиса из docker-compose
 
     app.config['SQLALCHEMY_DATABASE_URI'] = \
         f'postgresql://{db_user}:{db_password}@{db_host}:5432/{db_name}'
